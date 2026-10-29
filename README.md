@@ -1,25 +1,39 @@
 # Rook Chess
 
-A clean, responsive chess website starter.
+A responsive chess site with a local game and an online-play foundation.
 
-## Features
+## Current files
 
-- Responsive chessboard for desktop and mobile
-- Legal moves, check/checkmate, castling, en passant and pawn promotion (powered by chess.js)
-- Selectable time controls: 1, 3, 5, 10, 15 and 30 minutes, or no clock
-- Board flip, move history and undo
-- Runs as a static website; no build step required
+- `index.html` — local chess game
+- `online.html` — online sign-in, friend invites, live games and leaderboard UI
+- `config.js` — public Supabase connection settings (currently a placeholder)
+- `supabase/schema.sql` — profiles, game records, access policies and profile creation trigger
+- `supabase/functions/chess-api/index.ts` — authenticated game API, server-side legal-move checks, resignations and ELO updates
 
-## Run locally
+## Online setup required
 
-Open `index.html` in a modern browser with an internet connection. The page loads chess.js from a CDN.
+The online code is committed, but it will not work until Supabase is active and configured.
 
-## Publish with GitHub Pages
+1. Open the Supabase project dashboard and restore the existing project if it is paused/inactive. Check its current plan and any costs before restoring.
+2. In Supabase SQL Editor, run the contents of `supabase/schema.sql`.
+3. In Project Settings → API / Connect, copy the project URL and **publishable** key. Put them in `config.js`. Never use a secret or `service_role` key in browser files.
+4. Deploy the Edge Function named `chess-api` from `supabase/functions/chess-api/index.ts`, with JWT verification enabled. Supabase's Edge Function environment must have its standard `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` secrets configured. Never commit the service-role key.
+5. In Supabase Authentication settings, configure allowed site/redirect URLs for the GitHub Pages address. If email confirmation is enabled, new users must confirm their email before signing in.
+6. Enable GitHub Pages: Settings → Pages → Deploy from a branch → `main` → `/(root)`.
+7. Open `/online.html` on the published site and test with two separate accounts/devices.
 
-1. Open the repository's **Settings → Pages**.
-2. Under **Build and deployment**, choose **Deploy from a branch**.
-3. Select the `main` branch and `/ (root)` folder, then save.
+## Online features in this initial implementation
 
-## Current limitations
+- Email/password account creation and sign-in
+- Profile records with a starting rating of 1200
+- Invite-code games and selectable time controls
+- Server-side legal move validation via chess.js
+- Realtime game-state updates
+- Basic ELO changes after a finished rated game
+- Leaderboard and recent-game list
 
-This is a local two-player prototype. Online multiplayer, user accounts, server-authoritative clocks, persistent ELO ratings and anti-cheat are not implemented yet. Those require a backend and database; browser-only ratings would be easy to manipulate.
+## Important beta limitations
+
+This is an early online beta, not a tournament-ready chess server. Test clocks and reconnect behavior carefully before using it for rated competitive play. The initial ELO update routine is intentionally simple; anti-abuse controls, robust timeout adjudication, draw offers/claims, full rating transaction locking and tournament-grade server authority still need work. Do not use this as a high-stakes rating system yet.
+
+The `config.js` file contains placeholders. The online UI is not live until the Supabase project is restored, the schema is applied and the Edge Function is deployed.
